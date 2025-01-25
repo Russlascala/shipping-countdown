@@ -1,0 +1,117 @@
+<div id="count-down-Timer" class="commentPLusONEDAys" style="color: #DEC38E;">FREE delivery <span id="shipBefore4" style="font-weight: bold;color: #FFC543;"></span>. <div>Order within <strong style="color:#e15e5e;">0.00.00</strong> </div></div>
+
+<script>
+console.log("timer script running");
+
+
+  CountDownZone = document.querySelector('#count-down-Timer strong'),
+  TimeTarget    = 16  
+  ;
+function pad(n, len) { 
+  let s = n.toString();
+  return '0'.repeat(Math.max(len - s.length, 0)) + s;
+};
+
+var timerRunning = setInterval(countDown, 1000);
+
+function countDown() {
+  let
+    localTime = new Date(),                
+    utcTime   = localTime.getUTCHours(), 
+    estTime   = new Date()               
+    ;
+
+  
+    var today = new Date();
+    if (today.isDstObserved()) { 
+        estTime.setHours(utcTime-4);      
+    }else{
+        estTime.setHours(utcTime-5); 
+    }
+      
+
+
+/* if the day is 0-5 mon-fri and its earlier than 4:00pm  */
+  if ((estTime.getDay() > 0) && (estTime.getDay() < 6) && (estTime.getHours() < TimeTarget)) {                     
+    let
+      count_HM = [],
+      hrs  = (TimeTarget - 1) - estTime.getHours(),
+      mins = 59 - estTime.getMinutes(),
+      secs = 59 - estTime.getSeconds()
+      ;
+
+    if (hrs > 0)             { count_HM.push(hrs + ' hour(s)'); }
+    if (hrs > 0 || mins > 0) { count_HM.push(pad(mins, 2)+ ' minute(s)'); }
+    count_HM.push(pad(secs, 2)+ ' second(s)');
+
+    CountDownZone.textContent = count_HM.join(' - ');
+   
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+   
+    document.getElementById('shipBefore4').textContent = tomorrow.toDateString();
+  }
+  /* it is past 4:00 */
+  else {
+    
+    console.log("the day= " + (estTime.getDay()));
+    console.log("the hours= " + (estTime.getHours()));
+    console.log("target time=  " + TimeTarget);
+
+    /* if the day is 1-4 mon-thurs show expected delivery plus 2 days */
+    if ( (estTime.getDay() > 0) && (estTime.getDay() < 5)) {
+        var inTwoDays = new Date();
+        inTwoDays.setDate(inTwoDays.getDate() + 2);
+        document.getElementById('count-down-Timer').textContent = 'Expected Delivery: ' + inTwoDays.toDateString();
+        document.getElementById('count-down-Timer').style.fontWeight='bold';
+        document.getElementById('count-down-Timer').style.color="#006f02"
+        clearInterval(timerRunning);
+        } else if((estTime.getDay == 6) && (estTime.getHours() < TimeTarget) ){
+          var inTwoDays = new Date();
+          inTwoDays.setDate(inTwoDays.getDate() + 2);
+          document.getElementById('count-down-Timer').textContent = 'Expected Delivery: ' + inTwoDays.toDateString();
+          document.getElementById('count-down-Timer').style.fontWeight='bold';
+          document.getElementById('count-down-Timer').style.color="#006f02"
+          clearInterval(timerRunning);
+        }
+        /* if the day is 5-7 friday - sunday show expected delivery plus 3 days -- tuesday  */
+        else{
+            var inThreeDays = new Date();
+            inThreeDays.setDate(inThreeDays.getDate() + 3);
+        document.getElementById('count-down-Timer').textContent = 'Expected Delivery: ' + inThreeDays.toDateString();
+          document.getElementById('count-down-Timer').style.fontWeight='bold';
+          document.getElementById('count-down-Timer').style.color="#006f02"
+          clearInterval(timerRunning);
+        }
+  }
+  
+}
+
+
+
+
+
+Date.prototype.stdTimezoneOffset = function () {
+    var jan = new Date(this.getFullYear(), 0, 1);
+    var jul = new Date(this.getFullYear(), 6, 1);
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
+
+Date.prototype.isDstObserved = function () {
+    return this.getTimezoneOffset() < this.stdTimezoneOffset();
+}
+
+var today = new Date();
+if (today.isDstObserved()) { 
+    console.log ("Daylight saving time!"); 
+}else{
+    console.log ("NOT Daylight saving time!"); 
+}
+
+
+
+
+
+
+</script>
