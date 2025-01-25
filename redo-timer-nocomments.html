@@ -1,0 +1,93 @@
+<h1>Shipping Countdown Timer</h1>
+
+<div id="count-down-Timer" style=" font-size: 18px; color: #0b2b50; font-weight: bold; background-color:#B2C0CE;">
+  FREE delivery <span id="shipBefore4" style="font-weight: bold; color: #fff;"></span>. 
+  <div id="timer-container">Order within <strong id="countdown" style="color: #e15e5e;"></strong></div>
+</div>
+
+<script>
+  
+  const TIME_TARGET = 16; 
+  const DAYS_TO_DELIVERY = {
+    after4MonThurs: 2,
+    after4Fri: 4, 
+    saturday: 3,  
+    sunday: 2     
+  };
+  const adjustToEST = (date) => {
+    const utcOffset = date.isDstObserved() ? -4 : -5; 
+    date.setHours(date.getUTCHours() + utcOffset);
+    return date;
+  };
+
+
+  Date.prototype.stdTimezoneOffset = function () {
+    const jan = new Date(this.getFullYear(), 0, 1);
+    const jul = new Date(this.getFullYear(), 6, 1);
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+  };
+
+  Date.prototype.isDstObserved = function () {
+    return this.getTimezoneOffset() < this.stdTimezoneOffset();
+  };
+
+ 
+  const updateTimer = () => {
+    const now = adjustToEST(new Date());
+    const currentHour = now.getHours();
+    const currentDay = now.getDay();
+    const targetTime = new Date(now);
+
+  
+    targetTime.setHours(TIME_TARGET, 0, 0, 0);
+
+    const countdownElement = document.getElementById("countdown");
+    const deliveryElement = document.getElementById("shipBefore4");
+    const timerContainer = document.getElementById("timer-container");
+    const containerElement = document.getElementById("count-down-Timer");
+
+    if (currentDay === 5 && currentHour >= TIME_TARGET || currentDay === 6 || currentDay === 0) {
+     
+      const deliveryDate = new Date(now);
+      if (currentDay === 5) {
+       
+        deliveryDate.setDate(deliveryDate.getDate() + DAYS_TO_DELIVERY.after4Fri);
+      } else if (currentDay === 6) {
+
+        deliveryDate.setDate(deliveryDate.getDate() + DAYS_TO_DELIVERY.saturday);
+      } else if (currentDay === 0) {
+    
+        deliveryDate.setDate(deliveryDate.getDate() + DAYS_TO_DELIVERY.sunday);
+      }
+      
+      containerElement.innerHTML = `Expected Delivery: <strong>${deliveryDate.toDateString()}</strong>`;
+      containerElement.style.fontWeight = "bold";
+      containerElement.style.color = "#006f02";
+
+      clearInterval(timerInterval); 
+    } else if (currentHour < TIME_TARGET) {
+      const diffMs = targetTime - now;
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+      countdownElement.textContent = `${hours}h ${minutes}m ${seconds}s`;
+      const deliveryDate = new Date(now);
+      deliveryDate.setDate(deliveryDate.getDate() + 1);
+      deliveryElement.textContent = deliveryDate.toDateString();
+    } else {
+      const deliveryDate = new Date(now);
+      deliveryDate.setDate(deliveryDate.getDate() + DAYS_TO_DELIVERY.after4MonThurs);
+
+      containerElement.innerHTML = `Expected Delivery: <strong>${deliveryDate.toDateString()}</strong>`;
+      containerElement.style.fontWeight = "bold";
+      containerElement.style.color = "#006f02";
+
+      clearInterval(timerInterval);
+    }
+  };
+
+
+  const timerInterval = setInterval(updateTimer, 1000);
+  updateTimer();
+</script>

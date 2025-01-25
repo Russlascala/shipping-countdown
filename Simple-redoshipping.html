@@ -1,0 +1,82 @@
+<h1>Shipping Countdown Timer</h1>
+
+<div id="count-down-Timer" style=" font-size: 18px; color: #0b2b50; font-weight: bold; background-color:#B2C0CE;">
+    FREE delivery <span id="shipBefore4" style="font-weight: bold; color: #A47C57;"></span>
+    <div id="timer-container">Order within <strong id="countdown" style="color: #e15e5e;"></strong></div>
+  </div>
+
+<script>
+  // Constants
+  const TIME_TARGET = 16; // 4 PM EST
+  const DAYS_TO_DELIVERY = { 5: 4, 6: 3, 0: 2 }; // Delivery days for Fri-Sun (0 = Sunday)
+
+  // Helper to adjust for EST (handles DST)
+  const getESTDate = () => {
+    const now = new Date();
+    const utcOffset = now.isDstObserved() ? -4 : -5;
+    now.setHours(now.getUTCHours() + utcOffset);
+    return now;
+  };
+
+  // DST detection
+  Date.prototype.isDstObserved = function () {
+    const jan = new Date(this.getFullYear(), 0, 1);
+    const jul = new Date(this.getFullYear(), 6, 1);
+    return this.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+  };
+
+  // Calculate delivery date
+  const calculateDeliveryDate = (now) => {
+    const day = now.getDay();
+    const isAfterCutoff = now.getHours() >= TIME_TARGET;
+
+    if (day >= 5 || (day === 4 && isAfterCutoff)) {
+      // After 4 PM Friday, or all Saturday/Sunday
+      const deliveryDays = DAYS_TO_DELIVERY[day] || 2; // Default 2 days for other days
+      const deliveryDate = new Date(now);
+      deliveryDate.setDate(now.getDate() + deliveryDays);
+      return { deliveryDate, showCountdown: false };
+    }
+
+    // Before 4 PM (Monday–Thursday)
+    const deliveryDate = new Date(now);
+    deliveryDate.setDate(now.getDate() + 1); // Next-day delivery
+    return { deliveryDate, showCountdown: true };
+  };
+
+  // Update the timer and delivery display
+  const updateTimer = () => {
+    const now = getESTDate();
+    const { deliveryDate, showCountdown } = calculateDeliveryDate(now);
+    const countdownElement = document.getElementById("countdown");
+    const deliveryElement = document.getElementById("shipBefore4");
+    const timerContainer = document.getElementById("timer-container");
+    const containerElement = document.getElementById("count-down-Timer");
+
+    if (showCountdown) {
+      // Update countdown
+      const targetTime = new Date(now);
+      targetTime.setHours(TIME_TARGET, 0, 0, 0);
+      const diffMs = targetTime - now;
+
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+      countdownElement.textContent = `${hours}h ${minutes}m ${seconds}s`;
+      deliveryElement.textContent = deliveryDate.toDateString();
+      timerContainer.style.display = "block";
+    } else {
+      // Remove countdown and show delivery date
+      containerElement.innerHTML = `Expected Delivery: <strong>${deliveryDate.toDateString()}</strong>`;
+      containerElement.style.fontWeight = "bold";
+      containerElement.style.color = "#006f02";
+
+      clearInterval(timerInterval); // Stop the timer
+    }
+  };
+
+  // Start the timer
+  const timerInterval = setInterval(updateTimer, 1000);
+  updateTimer(); // Initial call
+</script>
